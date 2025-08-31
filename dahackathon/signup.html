@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign Up</title>
+<style>
+body { font-family: Arial,sans-serif; background:#f5f7f9; display:flex; justify-content:center; align-items:center; height:100vh; }
+form { background:white; padding:30px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); width:320px; }
+input { width:100%; padding:10px; margin:10px 0; border-radius:5px; border:1px solid #ccc; }
+button { width:100%; padding:10px; background:#27ae60; color:white; border:none; border-radius:5px; cursor:pointer; }
+button:hover { background:#219150; }
+</style>
+</head>
+<body>
+
+<form onsubmit="signup(event)">
+  <h2>Create Account</h2>
+  <input type="email" id="email" placeholder="Email" required>
+  <input type="password" id="password" placeholder="Password (min 6 chars)" required minlength="6">
+  <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+  <button type="submit">Sign Up</button>
+  <p style="text-align:center; margin-top:10px;"><a href="login.html">Already have an account? Login</a></p>
+</form>
+
+<script>
+function signup(e){
+  e.preventDefault();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+
+  if(password !== confirmPassword){
+    alert("Passwords do not match!");
+    return;
+  }
+
+  let accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
+
+  if(accounts.some(acc => acc.email === email)){
+    alert("Email already exists!");
+    return;
+  }
+
+  accounts.push({email,password});
+  localStorage.setItem("accounts", JSON.stringify(accounts));
+  alert("Account created successfully! Please login.");
+  window.location = "login.html";
+}
+</script>
+
+</body>
+</html>

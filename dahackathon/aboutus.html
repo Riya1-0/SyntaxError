@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Us - Hydrogen Project Portal</title>
+<style>
+body { margin:0; font-family:Arial, sans-serif; background:#f5f7f9; color:#333; }
+header { background:#27ae60; padding:15px 50px; display:flex; justify-content:space-between; align-items:center; }
+header img { height:50px; }
+header nav a { color:white; text-decoration:none; margin:0 15px; font-weight:bold; }
+header nav a:hover { text-decoration:underline; }
+
+.container { max-width:1000px; margin:40px auto; padding:20px; }
+h1 { color:#27ae60; text-align:center; }
+h2 { color:#219150; margin-top:30px; }
+
+.team { display:flex; flex-wrap:wrap; justify-content:space-around; margin-top:20px; }
+.team-member { background:white; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); width:250px; margin:15px; text-align:center; }
+.team-member img { width:100px; height:100px; border-radius:50%; margin-bottom:10px; }
+
+.contact { background:white; padding:30px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); margin-top:40px; }
+.contact input, .contact textarea { width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:5px; }
+.contact button { background:#27ae60; color:white; border:none; padding:12px 20px; border-radius:5px; cursor:pointer; }
+.contact button:hover { background:#219150; }
+
+footer { background:#222; color:white; text-align:center; padding:20px; margin-top:40px; }
+footer a { color:#27ae60; margin:0 10px; text-decoration:none; }
+footer a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="logo.webp" alt="Logo">
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About Us</a>
+    <a href="login.html">Login</a>
+    <a href="signup.html">Sign Up</a>
+  </nav>
+</header>
+
+<div class="container">
+  <h1>About Us</h1>
+  <p>Welcome to the <b>Hydrogen Project Portal</b> – your go-to platform for the latest developments in hydrogen infrastructure, clean energy policies, and green technology adoption worldwide. Our mission is to accelerate the transition towards a sustainable, hydrogen-powered future by connecting stakeholders, sharing data, and empowering decision-makers.</p>
+
+  <h2>Our Mission</h2>
+  <p>We aim to provide transparent, reliable, and up-to-date information on hydrogen projects and government policies, helping industries, researchers, and policymakers make better decisions for the future of clean energy.</p>
+
+  <h2>Our Vision</h2>
+  <p>A world powered by clean hydrogen energy, reducing carbon emissions and building a sustainable future for generations to come.</p>
+
+  <h2>Meet Our Team</h2>
+  <div class="team">
+    <div class="team-member">
+      <img src="https://via.placeholder.com/100" alt="Team Member">
+      <h3>Khushan Borse</h3>
+      
+    </div>
+    <div class="team-member">
+      <img src="https://via.placeholder.com/100" alt="Team Member">
+      <h3>Riya Jethava</h3>
+      
+    </div>
+    <div class="team-member">
+      <img src="https://via.placeholder.com/100" alt="Team Member">
+      <h3>Pushti Dobariya</h3>
+      
+    </div>
+  </div>
+
+  <h2>Contact Us</h2>
+  <div class="contact">
+    <form onsubmit="sendMessage(event)">
+      <input type="text" id="name" placeholder="Your Name" required>
+      <input type="email" id="email" placeholder="Your Email" required>
+      <textarea id="message" placeholder="Your Message" rows="5" required></textarea>
+      <button type="submit">Send Message</button>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2025 Hydrogen Project Portal | All Rights Reserved</p>
+  <p>
+    <a href="#">Facebook</a> | 
+    <a href="#">Twitter</a> | 
+    <a href="#">LinkedIn</a> | 
+    <a href="mailto:info@hydrogenportal.com">Email Us</a>
+  </p>
+</footer>
+
+<script>
+function sendMessage(e){
+  e.preventDefault();
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const message = document.getElementById("message").value.trim();
+
+  if(name && email && message){
+    alert("Thank you " + name + "! Your message has been received. We’ll get back to you soon.");
+    document.querySelector("form").reset();
+  }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hydrogen Project Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('bg.webp') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+    }
+
+    header {
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 50px;
+    }
+
+    header img {
+      height: 50px;
+    }
+
+    nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    nav a:hover {
+      color: #27ae60;
+    }
+
+    .container {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: green;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: darkgreen;
+      margin-bottom: 40px;
+    }
+
+    .news {
+      background: rgba(0,0,0,0.7);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px auto;
+      width: 80%;
+      max-width: 800px;
+      text-align: left;
+      color: white;
+    }
+
+    .map-buttons {
+      margin-top: 30px;
+    }
+
+    .map-buttons button {
+      background: #27ae60;
+      border: none;
+      padding: 12px 25px;
+      margin: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+    }
+
+    .map-buttons button:hover {
+      background: #219150;
+    }
+
+    iframe {
+      display: none;
+      margin: 0;
+      width: 100%;
+      height: 100vh;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.webp" alt="Logo">
+    <nav id="navLinks">
+      <!-- Links will be injected dynamically -->
+    </nav>
+  </header>
+
+  <div class="container" id="homeSection">
+    <h1>Welcome to the Hydrogen Project Portal</h1>
+    <p class="subtitle">Explore the latest developments in hydrogen infrastructure and policies worldwide.</p>
+
+    <div class="news">
+      <h2>Latest News</h2>
+      <p>🌍 Global hydrogen demand is expected to grow significantly by 2030 as countries push for clean energy transition.</p>
+      <p>⚡ Major projects in Europe and Asia are scaling up green hydrogen production using renewable energy sources.</p>
+      <p>🚀 New policies are being announced every month to accelerate hydrogen adoption in industries and transportation.</p>
+    </div>
+
+    <div class="map-buttons">
+      <button onclick="showMap('project_map_with_popups.html')">Infrastructure Map</button>
+      <button onclick="showMap('area_map.html')">Policy Map</button>
+    </div>
+  </div>
+
+  <iframe id="mapFrame"></iframe>
+
+  <script>
+    // Navigation
+    function updateNav() {
+      const nav = document.getElementById("navLinks");
+      const loggedInUser = localStorage.getItem("loggedInUser");
+
+      if (loggedInUser) {
+        nav.innerHTML = `
+          <a href="#" onclick="showHome()">Home</a>
+          <a href="aboutus.html">About Us</a>
+          <span style="margin:0 15px; color:#27ae60;">Welcome, ${loggedInUser}</span>
+          <a href="logout.html">Logout</a>
+        `;
+      } else {
+        nav.innerHTML = `
+          <a href="#" onclick="showHome()">Home</a>
+          <a href="aboutus.html">About Us</a>
+          <a href="login.html">Login</a>
+          <a href="signup.html">Sign Up</a>
+        `;
+      }
+    }
+    updateNav();
+
+    function showHome() {
+      document.getElementById("mapFrame").style.display = "none";
+      document.getElementById("homeSection").style.display = "block";
+    }
+
+    function showMap(file) {
+      let frame = document.getElementById("mapFrame");
+      frame.src = file;
+      frame.style.display = "block";
+      document.getElementById("homeSection").style.display = "none";
+    }
+  </script>
+</body>
+</html>

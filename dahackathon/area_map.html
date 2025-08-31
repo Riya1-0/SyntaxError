@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Policy Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Leaflet Draw -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+    <!-- Turf.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; left:300px; right:0; }
+        #sidebar {
+            position:absolute;
+            top:0; bottom:0; left:0;
+            width:300px;
+            background:#fff;
+            border-right:1px solid #ccc;
+            overflow-y:auto;
+            padding:10px;
+            font-family:Arial, sans-serif;
+        }
+        .policy-card {
+            border:1px solid #ddd;
+            border-radius:8px;
+            padding:10px;
+            margin-bottom:10px;
+            background:#f9f9f9;
+        }
+        .policy-card h4 {
+            margin:0 0 5px 0;
+            font-size:16px;
+            color:#2a4d69;
+        }
+        .policy-card p { margin:3px 0; font-size:14px; }
+        .no-policy { color:#999; font-style:italic; }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h3>Selected Policies</h3>
+        <div id="policyList" class="no-policy">Draw an area to see policies.</div>
+    </div>
+    <div id="map"></div>
+
+    <script>
+        const map = L.map('map').setView([22.9734, 78.6569], 5); // India center
+
+        // Base map
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        let statesData, policiesData;
+
+        // Load States GeoJSON
+        fetch("states.json")
+            .then(res => res.json())
+            .then(data => {
+                statesData = data;
+                L.geoJSON(statesData, {
+                    style: { color: "#DC143C", weight: 1, fillOpacity: 0.1 }
+                }).addTo(map);
+            });
+
+        // Load Policies JSON
+        fetch("CPD.json")
+            .then(res => res.json())
+            .then(data => {
+                policiesData = data;
+            });
+
+        // Draw Control
+        const drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+        const drawControl = new L.Control.Draw({
+            edit: { featureGroup: drawnItems },
+            draw: {
+                polygon: true,
+                rectangle: true,
+                circle: true,
+                marker: false,
+                polyline: false
+            }
+        });
+        map.addControl(drawControl);
+
+        // Handle Draw Created
+        map.on(L.Draw.Event.CREATED, function (e) {
+            drawnItems.clearLayers();
+            let layer = e.layer;
+            drawnItems.addLayer(layer);
+
+            let drawnGeoJSON = layer.toGeoJSON();
+
+            // 1️⃣ Check if inside an Indian state
+            let matchedState = null;
+            statesData.features.forEach(state => {
+                if (turf.booleanIntersects(drawnGeoJSON, state)) {
+                    matchedState = state.properties.st_nm;
+                }
+            });
+
+            let matchedPolicies = [];
+
+            if (matchedState) {
+                // State policies
+                let statePolicies = policiesData.filter(p => {
+                    if (p.states) {
+                        try {
+                            let statesArr = JSON.parse(p.states);
+                            return statesArr.some(s => s.name.toLowerCase() === matchedState.toLowerCase());
+                        } catch (err) { return false; }
+                    }
+                    return false;
+                });
+
+                // India national policies
+                let indiaPolicies = policiesData.filter(p => {
+                    if (p.countries) {
+                        try {
+                            let countryArr = JSON.parse(p.countries);
+                            return countryArr.some(c => c.name.toLowerCase() === "india") 
+                                   && p.jurisdiction === "National";
+                        } catch (err) { return false; }
+                    }
+                    return false;
+                });
+
+                matchedPolicies = [...statePolicies, ...indiaPolicies];
+                displayPolicies(matchedPolicies, `${matchedState}, India`);
+
+            } else {
+                // If no state, check for country
+                let foundCountry = null;
+                policiesData.forEach(p => {
+                    if (p.countries) {
+                        try {
+                            let countryArr = JSON.parse(p.countries);
+                            if (countryArr.some(c => c.name.toLowerCase() === "india")) {
+                                foundCountry = "India";
+                            }
+                        } catch (err) {}
+                    }
+                });
+
+                if (foundCountry === "India") {
+                    // Only India national policies
+                    matchedPolicies = policiesData.filter(p => {
+                        if (p.countries) {
+                            try {
+                                let countryArr = JSON.parse(p.countries);
+                                return countryArr.some(c => c.name.toLowerCase() === "india") 
+                                       && p.jurisdiction === "National";
+                            } catch (err) { return false; }
+                        }
+                        return false;
+                    });
+                    displayPolicies(matchedPolicies, "India");
+                } else {
+                    // For other countries: only that country's national policies
+                    let otherCountryPolicies = [];
+                    policiesData.forEach(p => {
+                        if (p.countries) {
+                            try {
+                                let countryArr = JSON.parse(p.countries);
+                                countryArr.forEach(c => {
+                                    if (turf.booleanIntersects(drawnGeoJSON, turf.bboxPolygon([-180,-90,180,90]))) {
+                                        if (c.name) {
+                                            otherCountryPolicies = policiesData.filter(pp => {
+                                                try {
+                                                    let ca = JSON.parse(pp.countries);
+                                                    return ca.some(cc => cc.name.toLowerCase() === c.name.toLowerCase()) 
+                                                           && pp.jurisdiction === "National";
+                                                } catch(err) { return false; }
+                                            });
+                                            foundCountry = c.name;
+                                        }
+                                    }
+                                });
+                            } catch (err) {}
+                        }
+                    });
+
+                    displayPolicies(otherCountryPolicies, foundCountry || "Unknown Region");
+                }
+            }
+        });
+
+        // Show policies in sidebar
+        function displayPolicies(policies, regionName) {
+            const policyList = document.getElementById("policyList");
+            policyList.innerHTML = "";
+
+            if (!policies || policies.length === 0) {
+                policyList.innerHTML = `<p class="no-policy">No policies found for ${regionName || "this area"}.</p>`;
+                return;
+            }
+
+            policies.forEach(p => {
+                let card = document.createElement("div");
+                card.className = "policy-card";
+                card.innerHTML = `
+                    <h4>${p.title || "Untitled Policy"}</h4>
+                    ${p.status ? `<p><b>Status:</b> ${p.status}</p>` : ""}
+                    ${p.year ? `<p><b>Year:</b> ${p.year}</p>` : ""}
+                    ${p.datePromulgated ? `<p><b>Date Promulgated:</b> ${p.datePromulgated}</p>` : ""}
+                    ${p.yearEnded ? `<p><b>Year Ended:</b> ${p.yearEnded}</p>` : ""}
+                    ${p.technology ? `<p><b>Technology:</b> ${p.technology}</p>` : ""}
+                    ${p.policyType ? `<p><b>Policy Type:</b> ${p.policyType}</p>` : ""}
+                    ${p.website ? `<p><b>Website:</b> <a href="${p.website}" target="_blank">Open Link</a></p>` : ""}
+                `;
+                policyList.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
